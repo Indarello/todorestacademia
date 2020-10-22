@@ -58,7 +58,7 @@ public class List {
         return "ok";
     }
 
-    public static String checkId(String id) {
+    public static String checkStringId(String id) {
         //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
         int idLength = id.length();
         if (idLength < 10 || idLength > 50) return "Bad length of parameter id";

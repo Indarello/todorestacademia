@@ -60,8 +60,7 @@ public class ListRestController {
 
     @GetMapping(value = "/list", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> listGetLists(@RequestBody ObjectNode obj) {
-        //сортировка пагинация и тд позже
-        //if (obj.has("sortType")) ...
+        //TODO:сортировка пагинация и тд доделать
         try {
             return new ResponseEntity<>(listService.getAll(), HttpStatus.OK);
         } catch (Exception e) {
@@ -76,7 +75,7 @@ public class ListRestController {
         }
 
         String id = obj.get("id").asText();
-        String idCheckResult = List.checkId(id);
+        String idCheckResult = List.checkStringId(id);
         if (!idCheckResult.equals("ok")) {
             return new ResponseEntity<>(new ApiResponse(false, idCheckResult), HttpStatus.NOT_ACCEPTABLE);
         }
@@ -99,14 +98,9 @@ public class ListRestController {
         }
     }
 
-    @DeleteMapping(value = "/list", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> listDelete(@RequestBody ObjectNode obj) {
-        if (!obj.has("id")) {
-            return new ResponseEntity<>(new ApiResponse(false, "Parameter id not provided"), HttpStatus.NOT_ACCEPTABLE);
-        }
-
-        String id = obj.get("id").asText();
-        String idCheckResult = List.checkId(id);
+    @DeleteMapping(value = "/list/{id}", produces = "application/json")
+    public ResponseEntity<Object> listDelete(@PathVariable(name = "id") String id) {
+        String idCheckResult = List.checkStringId(id);
         if (!idCheckResult.equals("ok")) {
             return new ResponseEntity<>(new ApiResponse(false, idCheckResult), HttpStatus.NOT_ACCEPTABLE);
         }

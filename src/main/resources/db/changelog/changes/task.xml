@@ -22,6 +22,10 @@
 				<constraints nullable="false"/>
 			</column>
 			<column name="description" type="text">
+				<constraints nullable="false"/>
+			</column>
+			<column name="urgency" type="int">
+				<constraints nullable="false"/>
 			</column>
 			<column name="done" type="boolean">
 				<constraints nullable="false"/>

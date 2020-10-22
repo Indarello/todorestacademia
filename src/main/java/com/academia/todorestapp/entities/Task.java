@@ -41,14 +41,21 @@ public class Task {
     private String description;
 
     @NotNull
+    private int urgency;
+
+    @NotNull
     private boolean done;
 
     public Task() {
     }
 
-    public Task(String name, UUID listId) {
+    public Task(String name, UUID listId, String description, int urgency) {
         this.name = name;
         this.listId = listId;
+        this.createDate = Timestamp.valueOf(LocalDateTime.now());
+        this.editDate = createDate;
+        this.description = description;
+        this.urgency = urgency;
     }
 
     public static String checkName(String name) {
@@ -57,8 +64,21 @@ public class Task {
         return "ok";
     }
 
-    public static String checkId(long id) {
-        if (id < 1) return "Parameter id cant be less 1";
+    public static String checkUrgency(int urgency) {
+        if (urgency < 1 || urgency > 5) return "Parameter urgency can be only 1-5";
+        return "ok";
+    }
+
+    public static String checkDescription(String description) {
+        int descriptionLength = description.length();
+        if (descriptionLength > 200) return "Bad length of parameter description";
+        return "ok";
+    }
+
+    public static String checkStringId(String id) {
+        //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
+        int idLength = id.length();
+        if (idLength < 10 || idLength > 50) return "Bad length of parameter id";
         return "ok";
     }
 }

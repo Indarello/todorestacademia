@@ -12,23 +12,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ListServiceImpl implements ListService {
+public class ListServiceImpl implements ListService
+{
 
-    @Autowired
-    private ListRepository listRepository;
+    private final ListRepository listRepository;
+
+    public ListServiceImpl(ListRepository listRepository)
+    {
+        this.listRepository = listRepository;
+    }
 
     @Override
-    public List addList(List list) {
+    public List addList(List list)
+    {
         return listRepository.saveAndFlush(list);
     }
 
     @Override
-    public java.util.List<List> getAll() {
+    public java.util.List<List> getAll()
+    {
         return listRepository.findAll();
     }
 
     @Override
-    public Optional<List> editList(UUID id, String name) {
+    public Optional<List> editList(UUID id, String name)
+    {
         Optional<List> searchResult = listRepository.findById(id);
         if (searchResult.isPresent()) {
             List foundedList = searchResult.get();
@@ -42,9 +50,12 @@ public class ListServiceImpl implements ListService {
     }
 
     @Override
-    public boolean deleteList(UUID id) {
+    public boolean deleteList(UUID id)
+    {
         Optional<List> searchResult = listRepository.findById(id);
-        if (searchResult.isPresent()) {
+        if (searchResult.isPresent())
+        {
+            //TODO: удаление всех связанных заданий
             listRepository.deleteById(id);
             return true;
         }

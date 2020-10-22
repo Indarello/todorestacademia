@@ -12,5 +12,6 @@ public class TodorestappApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TodorestappApplication.class, args);
+        //System.out.println(для копирования в тестировании);
     }
 }

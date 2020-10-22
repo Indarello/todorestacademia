@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface ListService {
 
-    List addList(List scroll);
+    List addList(List list);
 
     java.util.List<List> getAll();
 
