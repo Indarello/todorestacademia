@@ -48,7 +48,6 @@ public class List {
         this.createDate = Timestamp.valueOf(LocalDateTime.now());
         this.editDate = createDate;
         this.name = name;
-        System.out.println(createDate);
         this.done = true;
     }
 

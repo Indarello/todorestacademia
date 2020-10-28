@@ -5,25 +5,25 @@ import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
 import com.academia.todorestapp.service.ListService;
 import com.academia.todorestapp.service.TaskService;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
+import com.academia.todorestapp.util.SearchCriteria;
+import com.academia.todorestapp.util.SearchOperation;
+import com.academia.todorestapp.util.TaskSpecification;
+import com.academia.todorestapp.util.TaskSpecificationsBuilder;
+import com.sun.istack.NotNull;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CRUD REST контроллер для работы с List
@@ -37,8 +37,6 @@ public class TaskRestController {
     public TaskRestController(TaskService taskService) {
         this.taskService = taskService;
     }
-
-    //TODO: доделать методы вывода списка задач и списка списков, сделать метод /task/markDone/{id}
 
     @PostMapping(value = "/task", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> taskAdd(@RequestBody Task obj) {
@@ -77,14 +75,16 @@ public class TaskRestController {
             return new ResponseEntity<>(new ApiResponse(false, "Parameter listId not provided"), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        if (!taskService.FindListById(obj.getListId())) {
-            return new ResponseEntity<>(new ApiResponse(false, "List not found by id"), HttpStatus.NOT_FOUND);
-        }
-
         Task newTask = new Task(obj.getName(), obj.getListId(), objDescription, objUrgency);
 
         try {
-            return new ResponseEntity<>(taskService.addTask(newTask), HttpStatus.CREATED);
+            Optional<Task> editResult = taskService.addTask(newTask);
+
+            if (editResult.isPresent()) {
+                return new ResponseEntity<>(editResult.get(), HttpStatus.CREATED);
+            }
+
+            return new ResponseEntity<>(new ApiResponse(false, "List not found by listId or database error"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -92,9 +92,79 @@ public class TaskRestController {
 
     @GetMapping(value = "/task", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> taskGetTasks(@RequestBody ObjectNode obj) {
-        //TODO: доделать вывод списка задач
+        TaskSpecificationsBuilder builder = new TaskSpecificationsBuilder();
+        int requestPage = 0;
+        int numberOfElements = 10;
+        UUID listId;
+        String SortParameter = "createDate";
+        String SortType = "ascending";
+        Pageable pageable;
+
+        if (obj.has("listId")) {
+            listId = UUID.fromString(obj.get("listId").asText()); //TODO валидация listId
+        } else {
+            return new ResponseEntity<>(new ApiResponse(false, "Parameter listId not provided"), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        if (obj.has("requestPage")) {
+            requestPage = obj.get("requestPage").asInt();
+            if (requestPage < 0 || requestPage > 100000) {
+                return new ResponseEntity<>(new ApiResponse(false, "Parameter requestPage can be only 0-100000"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (obj.has("numberOfElements")) {
+            numberOfElements = obj.get("numberOfElements").asInt();
+            if (numberOfElements < 1 || numberOfElements > 100) {
+                numberOfElements = 10;
+            }
+        }
+
+        if (obj.has("SortParameter")) {
+            SortParameter = obj.get("SortParameter").asText();
+            if (!(SortParameter.equals("id") || SortParameter.equals("listId") || SortParameter.equals("name") || SortParameter.equals("createDate") ||
+                    SortParameter.equals("editDate") || SortParameter.equals("description") || SortParameter.equals("urgency") ||
+                    SortParameter.equals("done"))) {
+                return new ResponseEntity<>(
+                        new ApiResponse(false, "Bad SortParameter, it can be only id|name|createDate|editDate|done"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (obj.has("SortType")) {
+            SortType = obj.get("SortType").asText();
+            if (!(SortType.equals("ascending") || SortType.equals("descending"))) {
+                return new ResponseEntity<>(new ApiResponse(false, "Bad SortType, it can be only ascending|descending"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (SortType.equals("ascending")) {
+            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter));
+        } else {
+            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter).descending());
+        }
+
+        if (obj.has("filter")) {
+            String filter = obj.get("filter").asText();
+
+            Pattern pattern =
+                    Pattern.compile("([A-Za-z0-9_а-яА-Я]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET + ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),",
+                            Pattern.UNICODE_CHARACTER_CLASS
+                    );
+            Matcher matcher = pattern.matcher(filter + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));
+            }
+
+            Specification<Task> spec = builder.build();
+
+            //Specification<Task> spec1 = new TaskSpecification(new SearchCriteria("listId", SearchOperation.EQUALITY, listId));  //TODO: UUID в specification
+
+            //return new ResponseEntity<>(taskService.getAllWithSpec(Specification.where(spec1).and(spec), pageable), HttpStatus.OK);
+            return new ResponseEntity<>(taskService.getAllWithSpec(spec, pageable), HttpStatus.OK);
+        }
+
         try {
-            return new ResponseEntity<>(taskService.getAll(), HttpStatus.OK);
+            return new ResponseEntity<>(taskService.getAll(pageable, listId), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -163,7 +233,27 @@ public class TaskRestController {
                 return new ResponseEntity<>(editResult.get(), HttpStatus.OK);
             }
 
-            return new ResponseEntity<>(new ApiResponse(false, "Task not found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(false, "Task not found, or database error (List not found)"), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping(value = "/task/markDone/{id}", produces = "application/json")
+    public ResponseEntity<Object> taskMarkDone(@PathVariable(name = "id") String id) {
+        String idCheckResult = Task.checkStringId(id);
+        if (!idCheckResult.equals("ok")) {
+            return new ResponseEntity<>(new ApiResponse(false, idCheckResult), HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        try {
+            Optional<Task> editResult = taskService.markDoneTask(UUID.fromString(id));
+
+            if (editResult.isPresent()) {
+                return new ResponseEntity<>(editResult.get(), HttpStatus.OK);
+            }
+
+            return new ResponseEntity<>(new ApiResponse(false, "Task not found, or database error (List not found)"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -181,7 +271,7 @@ public class TaskRestController {
                 return new ResponseEntity<>(new ApiResponse(true, "Task deleted"), HttpStatus.OK);
             }
 
-            return new ResponseEntity<>(new ApiResponse(false, "Task not found"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(new ApiResponse(false, "Task not found, or database error (List not found)"), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }

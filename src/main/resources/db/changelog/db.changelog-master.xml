@@ -4,6 +4,6 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">  
-    <include  file="db/changelog/changes/list.xml"/>
-    <include  file="db/changelog/changes/task.xml"/>
+    <include  file="db/changelog/changes/20201027175000_create_list_tables.xml"/>
+    <include  file="db/changelog/changes/20201027175100_create_task_tables.xml"/>
 </databaseChangeLog> 

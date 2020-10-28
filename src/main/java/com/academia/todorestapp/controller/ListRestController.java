@@ -4,8 +4,17 @@ import com.academia.todorestapp.payloads.ApiResponse;
 import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
 import com.academia.todorestapp.service.ListService;
+import com.academia.todorestapp.util.ListSpecification;
+import com.academia.todorestapp.util.ListSpecificationsBuilder;
+import com.academia.todorestapp.util.SearchCriteria;
+import com.academia.todorestapp.util.SearchOperation;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.*;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +32,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CRUD REST контроллер для работы с List
@@ -60,9 +71,68 @@ public class ListRestController {
 
     @GetMapping(value = "/list", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> listGetLists(@RequestBody ObjectNode obj) {
-        //TODO:сортировка пагинация и тд доделать
+        ListSpecificationsBuilder builder = new ListSpecificationsBuilder();
+        int requestPage = 0;
+        int numberOfElements = 10;
+        String SortParameter = "createDate";
+        String SortType = "ascending";
+        Pageable pageable;
+
+        if (obj.has("requestPage")) {
+            requestPage = obj.get("requestPage").asInt();
+            if (requestPage < 0 || requestPage > 100000) {
+                return new ResponseEntity<>(new ApiResponse(false, "Parameter requestPage can be only 0-100000"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (obj.has("numberOfElements")) {
+            numberOfElements = obj.get("numberOfElements").asInt();
+            if (numberOfElements < 1 || numberOfElements > 100) {
+                numberOfElements = 10;
+            }
+        }
+
+        if (obj.has("SortParameter")) {
+            SortParameter = obj.get("SortParameter").asText();
+            if (!(SortParameter.equals("id") || SortParameter.equals("name") || SortParameter.equals("createDate") || SortParameter.equals("editDate") ||
+                    SortParameter.equals("done"))) {
+                return new ResponseEntity<>(
+                        new ApiResponse(false, "Bad SortParameter, it can be only id|name|createDate|editDate|done"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (obj.has("SortType")) {
+            SortType = obj.get("SortType").asText();
+            if (!(SortType.equals("ascending") || SortType.equals("descending"))) {
+                return new ResponseEntity<>(new ApiResponse(false, "Bad SortType, it can be only ascending|descending"), HttpStatus.NOT_ACCEPTABLE);
+            }
+        }
+
+        if (SortType.equals("ascending")) {
+            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter));
+        } else {
+            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter).descending());
+        }
+
+        if (obj.has("filter")) {
+            String filter = obj.get("filter").asText();
+
+            Pattern pattern =
+                    Pattern.compile("([A-Za-z0-9_а-яА-Я]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET + ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),",
+                            Pattern.UNICODE_CHARACTER_CLASS
+                    );
+            Matcher matcher = pattern.matcher(filter + ",");
+            while (matcher.find()) {
+                builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));
+            }
+
+            Specification<List> spec = builder.build();
+
+            return new ResponseEntity<>(listService.getAllWithSpec(spec, pageable), HttpStatus.OK);
+        }
+
         try {
-            return new ResponseEntity<>(listService.getAll(), HttpStatus.OK);
+            return new ResponseEntity<>(listService.getAll(pageable), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse(false, e.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
         }
