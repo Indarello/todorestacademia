@@ -1,15 +1,20 @@
 package com.academia.todorestapp.util;
 
+import com.academia.todorestapp.entities.List;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import org.springframework.data.jpa.domain.Specification;
-import com.academia.todorestapp.entities.List;
-import com.academia.todorestapp.util.SearchOperation;
-import com.academia.todorestapp.util.SearchCriteria;
-
+/**
+ * Сборщик спецификация для сущности List
+ * Определяет какую операцию надо совершить в зависимости от содержимого String key, String operation
+ * key - это имя параметра в сущности, например name
+ * operation это операция - например Contains, т.е. имя должно содержить
+ * value - это значение - например "Четверг", т.е. имя должно содержать "Четверг"
+ * Необходима для фильтрации, например вывести List, имя которых содержит Четверг
+ */
 public final class ListSpecificationsBuilder {
 
     private java.util.List<SearchCriteria> params;

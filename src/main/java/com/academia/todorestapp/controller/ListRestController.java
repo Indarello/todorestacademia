@@ -1,37 +1,22 @@
 package com.academia.todorestapp.controller;
 
-import com.academia.todorestapp.payloads.ApiResponse;
 import com.academia.todorestapp.entities.List;
-import com.academia.todorestapp.entities.Task;
+import com.academia.todorestapp.payloads.ApiResponse;
 import com.academia.todorestapp.service.ListService;
-import com.academia.todorestapp.util.ListSpecification;
 import com.academia.todorestapp.util.ListSpecificationsBuilder;
-import com.academia.todorestapp.util.SearchCriteria;
 import com.academia.todorestapp.util.SearchOperation;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.sun.istack.NotNull;
-import org.springframework.beans.factory.annotation.*;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,9 +33,15 @@ public class ListRestController {
         this.listService = listService;
     }
 
+    /**
+     * Добавление нового List
+     *
+     * @param list - сущность списка
+     * @return ResponseEntity со статусом
+     */
     @PostMapping(value = "/list", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> listAdd(@RequestBody List obj) {
-        String objName = obj.getName();
+    public ResponseEntity<Object> listAdd(@RequestBody List list) {
+        String objName = list.getName();
         if (objName == null) {
             return new ResponseEntity<>(new ApiResponse(false, "Parameter name not provided"), HttpStatus.NOT_ACCEPTABLE);
         }
@@ -60,7 +51,7 @@ public class ListRestController {
             return new ResponseEntity<>(new ApiResponse(false, nameCheckResult), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        List newList = new List(obj.getName());
+        List newList = new List(list.getName());
 
         try {
             return new ResponseEntity<>(listService.addList(newList), HttpStatus.CREATED);
@@ -69,6 +60,12 @@ public class ListRestController {
         }
     }
 
+    /**
+     * Получение списков List, с пагинацией и дополнительной инфомрацией
+     *
+     * @param obj - объекст с разными параметрами
+     * @return ResponseEntity со статусом
+     */
     @GetMapping(value = "/list", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> listGetLists(@RequestBody ObjectNode obj) {
         ListSpecificationsBuilder builder = new ListSpecificationsBuilder();
@@ -138,6 +135,12 @@ public class ListRestController {
         }
     }
 
+    /**
+     * Изменения параметров сущности List
+     *
+     * @param obj - объекст с разными параметрами
+     * @return ResponseEntity со статусом
+     */
     @PutMapping(value = "/list", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> listEdit(@RequestBody ObjectNode obj) {
         if (!obj.has("id") || !obj.has("name")) {
@@ -168,6 +171,12 @@ public class ListRestController {
         }
     }
 
+    /**
+     * Удаление сущности List
+     *
+     * @param id - id сущности
+     * @return ResponseEntity со статусом
+     */
     @DeleteMapping(value = "/list/{id}", produces = "application/json")
     public ResponseEntity<Object> listDelete(@PathVariable(name = "id") String id) {
         String idCheckResult = List.checkStringId(id);

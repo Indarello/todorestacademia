@@ -1,16 +1,20 @@
 package com.academia.todorestapp.util;
 
+import com.academia.todorestapp.entities.Task;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.sql.Date;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import com.sun.istack.NotNull;
-import org.springframework.data.jpa.domain.Specification;
-import com.academia.todorestapp.entities.Task;
-import com.academia.todorestapp.util.SearchOperation;
-import com.academia.todorestapp.util.SearchCriteria;
-
+/**
+ * Сборщик спецификация для сущности Task
+ * Определяет какую операцию надо совершить в зависимости от содержимого String key, String operation
+ * key - это имя параметра в сущности, например name
+ * operation это операция - например Contains, т.е. имя должно содержить
+ * value - это значение - например "Четверг", т.е. имя должно содержать "написать"
+ * Необходима для фильтрации, например вывести Task, имя которых содержит "написать"
+ */
 public final class TaskSpecificationsBuilder {
 
     private java.util.List<SearchCriteria> params;

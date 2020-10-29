@@ -1,5 +1,8 @@
 package com.academia.todorestapp.util;
 
+/**
+ * Различные операции для фильтрации, в данный момент реализованы только Эквивалентность (:), Отрицание(!), Больше(>), Меньше(<), Содержание в себе(~)
+ */
 public enum SearchOperation {
     EQUALITY, NEGATION, GREATER_THAN, LESS_THAN, LIKE, STARTS_WITH, ENDS_WITH, CONTAINS;
 

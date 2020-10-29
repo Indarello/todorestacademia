@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
-import com.academia.todorestapp.payloads.GetListResponse;
 import com.academia.todorestapp.payloads.GetTaskResponse;
 import com.academia.todorestapp.repository.ListRepository;
 import com.academia.todorestapp.repository.TaskRepository;
@@ -57,7 +56,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public GetTaskResponse getAllWithSpec(Specification<Task> spec, Pageable pageable) {
-        Page<Task> searchResult = taskRepository.findAllByListId(spec, pageable);
+        Page<Task> searchResult = taskRepository.findAllWithSpecification(spec, pageable);
         return getGetTaskResponse(searchResult);
     }
 

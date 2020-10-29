@@ -1,17 +1,16 @@
 package com.academia.todorestapp.entities;
 
 import com.sun.istack.NotNull;
-import lombok.*;
+import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.Month;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.UUID;
 
 /**
  * Сущность списка
@@ -51,12 +50,24 @@ public class List {
         this.done = true;
     }
 
+    /**
+     * Проверяет правильность имени
+     *
+     * @param name - имя для проверки
+     * @return String с результатом проверки
+     */
     public static String checkName(String name) {
         int nameLength = name.length();
         if (nameLength < 1 || nameLength > 50) return "Bad length of parameter name";
         return "ok";
     }
 
+    /**
+     * Проверяет правильность id
+     *
+     * @param id - String UUID для проверки
+     * @return String с результатом проверки
+     */
     public static String checkStringId(String id) {
         //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
         int idLength = id.length();

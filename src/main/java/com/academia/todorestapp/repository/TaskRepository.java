@@ -1,6 +1,5 @@
 package com.academia.todorestapp.repository;
 
-import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,5 +22,5 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
 
     Page<Task> findAllByListId(Pageable pageable, UUID id);
 
-    Page<Task> findAllByListId(Specification<Task> spec, Pageable pageable);
+    Page<Task> findAllWithSpecification(Specification<Task> spec, Pageable pageable);
 }

@@ -1,27 +1,22 @@
 package com.academia.todorestapp.service.impl;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
-
 import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
 import com.academia.todorestapp.payloads.GetListResponse;
 import com.academia.todorestapp.repository.ListRepository;
 import com.academia.todorestapp.repository.TaskRepository;
 import com.academia.todorestapp.service.ListService;
-import com.academia.todorestapp.util.ListSpecification;
-import com.academia.todorestapp.util.SearchCriteria;
-import com.academia.todorestapp.util.SearchOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class ListServiceImpl implements ListService {

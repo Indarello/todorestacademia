@@ -5,6 +5,11 @@ import org.springframework.data.jpa.domain.Specification;
 
 import javax.persistence.criteria.*;
 
+/**
+ * Спецификация для сущности List
+ * Превращает значения criteria.getOperation() в конкретные действия по сравнению параметров
+ * Необходима для фильтрации
+ */
 public class ListSpecification implements Specification<List> {
 
     private SearchCriteria criteria;

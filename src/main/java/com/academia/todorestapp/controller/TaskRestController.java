@@ -1,24 +1,19 @@
 package com.academia.todorestapp.controller;
 
-import com.academia.todorestapp.payloads.ApiResponse;
-import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.entities.Task;
-import com.academia.todorestapp.service.ListService;
+import com.academia.todorestapp.payloads.ApiResponse;
 import com.academia.todorestapp.service.TaskService;
-import com.academia.todorestapp.util.SearchCriteria;
 import com.academia.todorestapp.util.SearchOperation;
-import com.academia.todorestapp.util.TaskSpecification;
 import com.academia.todorestapp.util.TaskSpecificationsBuilder;
-import com.sun.istack.NotNull;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.web.bind.annotation.*;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -38,9 +33,15 @@ public class TaskRestController {
         this.taskService = taskService;
     }
 
+    /**
+     * Добавление нового Task
+     *
+     * @param task - сущность списка
+     * @return ResponseEntity со статусом
+     */
     @PostMapping(value = "/task", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> taskAdd(@RequestBody Task obj) {
-        String objName = obj.getName();
+    public ResponseEntity<Object> taskAdd(@RequestBody Task task) {
+        String objName = task.getName();
         if (objName == null) {
             return new ResponseEntity<>(new ApiResponse(false, "Parameter name not provided"), HttpStatus.NOT_ACCEPTABLE);
         }
@@ -50,7 +51,7 @@ public class TaskRestController {
             return new ResponseEntity<>(new ApiResponse(false, nameCheckResult), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        int objUrgency = obj.getUrgency();
+        int objUrgency = task.getUrgency();
         if (objUrgency == 0) {
             objUrgency = 1; //будет превращать некоторые некорректные значения в 0 и затем в 1, считается нормальным если не будет давать ошибку?
         } else {
@@ -60,7 +61,7 @@ public class TaskRestController {
             }
         }
 
-        String objDescription = obj.getDescription();
+        String objDescription = task.getDescription();
         if (objDescription == null) {
             objDescription = "";
         } else {
@@ -70,12 +71,12 @@ public class TaskRestController {
             }
         }
 
-        UUID objListId = obj.getListId();
+        UUID objListId = task.getListId();
         if (objListId == null) {
             return new ResponseEntity<>(new ApiResponse(false, "Parameter listId not provided"), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        Task newTask = new Task(obj.getName(), obj.getListId(), objDescription, objUrgency);
+        Task newTask = new Task(task.getName(), task.getListId(), objDescription, objUrgency);
 
         try {
             Optional<Task> editResult = taskService.addTask(newTask);
@@ -90,6 +91,12 @@ public class TaskRestController {
         }
     }
 
+    /**
+     * Получение списков Task, с пагинацией и дополнительной инфомрацией
+     *
+     * @param obj - объекст с разными параметрами
+     * @return ResponseEntity со статусом
+     */
     @GetMapping(value = "/task", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> taskGetTasks(@RequestBody ObjectNode obj) {
         TaskSpecificationsBuilder builder = new TaskSpecificationsBuilder();
@@ -170,6 +177,12 @@ public class TaskRestController {
         }
     }
 
+    /**
+     * Изменение сущности Task
+     *
+     * @param obj - объекст с разными параметрами
+     * @return ResponseEntity со статусом
+     */
     @PutMapping(value = "/task", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Object> taskEdit(@RequestBody ObjectNode obj) {
         Optional<String> name = Optional.empty();
@@ -222,7 +235,7 @@ public class TaskRestController {
             }
         }
 
-        if (name.isEmpty() && description.isEmpty() && done.isEmpty() && urgency.isEmpty()) {
+        if (!name.isPresent() && !description.isPresent() && !done.isPresent() && !urgency.isPresent()) {
             return new ResponseEntity<>(new ApiResponse(false, "None of parameter name,description,urgency,done provided"), HttpStatus.NOT_ACCEPTABLE);
         }
 
@@ -239,6 +252,12 @@ public class TaskRestController {
         }
     }
 
+    /**
+     * Установление true в done для сущности Task
+     *
+     * @param id - id сущности
+     * @return ResponseEntity со статусом
+     */
     @PutMapping(value = "/task/markDone/{id}", produces = "application/json")
     public ResponseEntity<Object> taskMarkDone(@PathVariable(name = "id") String id) {
         String idCheckResult = Task.checkStringId(id);
@@ -259,6 +278,12 @@ public class TaskRestController {
         }
     }
 
+    /**
+     * Удаление сущности Task
+     *
+     * @param id - id сущности
+     * @return ResponseEntity со статусом
+     */
     @DeleteMapping(value = "/task/{id}", produces = "application/json")
     public ResponseEntity<Object> taskDelete(@PathVariable(name = "id") String id) {
         String idCheckResult = Task.checkStringId(id);

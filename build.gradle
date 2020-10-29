@@ -6,12 +6,18 @@ plugins {
 
 group = 'com.academia'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '15'
+sourceCompatibility = '1.8'
 
 configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.academia.todorestapp.TodorestappApplication'
+    }
 }
 
 repositories {

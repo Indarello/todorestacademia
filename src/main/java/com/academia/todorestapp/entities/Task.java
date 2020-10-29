@@ -58,23 +58,47 @@ public class Task {
         this.urgency = urgency;
     }
 
+    /**
+     * Проверяет правильность имени
+     *
+     * @param name - имя для проверки
+     * @return String с результатом проверки
+     */
     public static String checkName(String name) {
         int nameLength = name.length();
         if (nameLength < 1 || nameLength > 50) return "Bad length of parameter name";
         return "ok";
     }
 
+    /**
+     * Проверяет параметр срочности
+     *
+     * @param urgency - int значения срочности
+     * @return String с результатом проверки
+     */
     public static String checkUrgency(int urgency) {
         if (urgency < 1 || urgency > 5) return "Parameter urgency can be only 1-5";
         return "ok";
     }
 
+    /**
+     * Проверяет правильность описания
+     *
+     * @param description - String для проверки
+     * @return String с результатом проверки
+     */
     public static String checkDescription(String description) {
         int descriptionLength = description.length();
         if (descriptionLength > 200) return "Bad length of parameter description";
         return "ok";
     }
 
+    /**
+     * Проверяет правильность id
+     *
+     * @param id - String UUID для проверки
+     * @return String с результатом проверки
+     */
     public static String checkStringId(String id) {
         //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
         int idLength = id.length();
