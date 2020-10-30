@@ -61,17 +61,4 @@ public class List {
         if (nameLength < 1 || nameLength > 50) return "Bad length of parameter name";
         return "ok";
     }
-
-    /**
-     * Проверяет правильность id
-     *
-     * @param id - String UUID для проверки
-     * @return String с результатом проверки
-     */
-    public static String checkStringId(String id) {
-        //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
-        int idLength = id.length();
-        if (idLength < 10 || idLength > 50) return "Bad length of parameter id";
-        return "ok";
-    }
 }

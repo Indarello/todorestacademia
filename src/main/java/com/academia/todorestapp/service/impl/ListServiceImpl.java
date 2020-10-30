@@ -102,7 +102,7 @@ public class ListServiceImpl implements ListService {
             java.util.List<Task> ListOfTasks = taskRepository.findAllByListId(list.getId());
 
             for (Task task : ListOfTasks) {
-                if (!task.isDone() && task.getId() != excludeCheckTaskId) {
+                if (!task.getDone() && task.getId() != excludeCheckTaskId) {
                     checkResult = false;
                     break;
                 }

@@ -65,7 +65,7 @@ public class TaskServiceImpl implements TaskService {
         int done = 0;
         int notDone = 0;
         for (Task task : listOfTasks) {
-            if (task.isDone()) {
+            if (task.getDone()) {
                 done++;
             } else {
                 notDone++;
@@ -113,7 +113,7 @@ public class TaskServiceImpl implements TaskService {
         Optional<Task> searchResult = taskRepository.findById(id);
         if (searchResult.isPresent()) {
             Task foundedTask = searchResult.get();
-            if (!foundedTask.isDone()) {
+            if (!foundedTask.getDone()) {
                 if (!checkIfListExistedAndUpdate(foundedTask, true)) return false;
             } else {
                 if (!checkIfListExistedAndUpdate(foundedTask)) return false;
@@ -132,7 +132,7 @@ public class TaskServiceImpl implements TaskService {
         Optional<Task> searchResult = taskRepository.findById(id);
         if (searchResult.isPresent()) {
             Task foundedTask = searchResult.get();
-            if (!foundedTask.isDone()) {
+            if (!foundedTask.getDone()) {
                 foundedTask.setDone(true);
 
                 if (!checkIfListExistedAndUpdate(foundedTask, true)) return Optional.empty();

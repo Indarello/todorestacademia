@@ -16,10 +16,25 @@ import java.util.UUID;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificationExecutor<Task> {
 
+    /**
+     * Удаление всех сущностей Task принадлежащих List по id
+     * @param id - id сущности List
+     */
     void deleteByListId(UUID id);
 
+    /**
+     * Вывод всех сущностей Task принадлежащих List по id
+     * @param id - id сущности List
+     * @return Список Task
+     */
     java.util.List<Task> findAllByListId(UUID id);
 
+    /**
+     * Вывод всех сущностей Task принадлежащих List по id
+     * @param pageable - параметры страницы (сколько элементов на страницу, номер страницы и сортировка)
+     * @param id - id сущности List
+     * @return Страница со списком Task и информацией по пагинации
+     */
     Page<Task> findAllByListId(Pageable pageable, UUID id);
 
 }

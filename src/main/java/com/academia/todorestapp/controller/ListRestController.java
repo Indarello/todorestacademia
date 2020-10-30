@@ -1,11 +1,11 @@
 package com.academia.todorestapp.controller;
 
+import com.academia.todorestapp.dto.Dto;
 import com.academia.todorestapp.entities.List;
 import com.academia.todorestapp.payloads.ApiResponse;
 import com.academia.todorestapp.service.ListService;
 import com.academia.todorestapp.util.ListSpecificationsBuilder;
 import com.academia.todorestapp.util.SearchOperation;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -14,7 +14,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -47,9 +46,7 @@ public class ListRestController {
         }
 
         String nameCheckResult = List.checkName(objName);
-        if (!nameCheckResult.equals("ok")) {
-            return new ResponseEntity<>(new ApiResponse(false, nameCheckResult), HttpStatus.NOT_ACCEPTABLE);
-        }
+        if (!nameCheckResult.equals("ok")) return new ResponseEntity<>(new ApiResponse(false, nameCheckResult), HttpStatus.NOT_ACCEPTABLE);
 
         List newList = new List(list.getName());
 
@@ -63,60 +60,32 @@ public class ListRestController {
     /**
      * Получение списков List, с пагинацией и дополнительной инфомрацией
      *
-     * @param obj - объекст с разными параметрами
+     * @param dto - объекст с разными параметрами
      * @return ResponseEntity со статусом
      */
     @GetMapping(value = "/list", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> listGetLists(@RequestBody ObjectNode obj) {
+    public ResponseEntity<Object> listGetLists(@RequestBody Dto dto) {
         ListSpecificationsBuilder builder = new ListSpecificationsBuilder();
-        int requestPage = 0;
-        int numberOfElements = 10;
-        String SortParameter = "createDate";
-        String SortType = "ascending";
         Pageable pageable;
+        String checkResult;
 
-        if (obj.has("requestPage")) {
-            requestPage = obj.get("requestPage").asInt();
-            if (requestPage < 0 || requestPage > 100000) {
-                return new ResponseEntity<>(new ApiResponse(false, "Parameter requestPage can be only 0-100000"), HttpStatus.NOT_ACCEPTABLE);
-            }
+        if (!(checkResult = dto.checkNumberOfElements()).equals("ok") || !(checkResult = dto.checkRequestPage()).equals("ok")
+                || !(checkResult = dto.checkSortParameterList()).equals("ok") || !(checkResult = dto.checkSortType()).equals("ok")
+                || dto.getFilter() != null && !(checkResult = dto.checkFilter()).equals("ok")) {
+            return new ResponseEntity<>(new ApiResponse(false, checkResult), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        if (obj.has("numberOfElements")) {
-            numberOfElements = obj.get("numberOfElements").asInt();
-            if (numberOfElements < 1 || numberOfElements > 100) {
-                numberOfElements = 10;
-            }
-        }
-
-        if (obj.has("SortParameter")) {
-            SortParameter = obj.get("SortParameter").asText();
-            if (!(SortParameter.equals("id") || SortParameter.equals("name") || SortParameter.equals("createDate") || SortParameter.equals("editDate") ||
-                    SortParameter.equals("done"))) {
-                return new ResponseEntity<>(
-                        new ApiResponse(false, "Bad SortParameter, it can be only id|name|createDate|editDate|done"), HttpStatus.NOT_ACCEPTABLE);
-            }
-        }
-
-        if (obj.has("SortType")) {
-            SortType = obj.get("SortType").asText();
-            if (!(SortType.equals("ascending") || SortType.equals("descending"))) {
-                return new ResponseEntity<>(new ApiResponse(false, "Bad SortType, it can be only ascending|descending"), HttpStatus.NOT_ACCEPTABLE);
-            }
-        }
-
-        if (SortType.equals("ascending")) {
-            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter));
+        if (dto.getSortType().equals("ascending")) {
+            pageable = PageRequest.of(dto.getRequestPage(), dto.getNumberOfElements(), Sort.by(dto.getSortParameter()));
         } else {
-            pageable = PageRequest.of(requestPage, numberOfElements, Sort.by(SortParameter).descending());
+            pageable = PageRequest.of(dto.getRequestPage(), dto.getNumberOfElements(), Sort.by(dto.getSortParameter()).descending());
         }
 
-        if (obj.has("filter")) {
-            String filter = obj.get("filter").asText();
-
+        if (dto.getFilter() != null) {
             Pattern pattern =
-                    Pattern.compile("([A-Za-z0-9_а-яА-Я]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET + ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),", Pattern.UNICODE_CHARACTER_CLASS);
-            Matcher matcher = pattern.matcher(filter + ",");
+                    Pattern.compile("([A-Za-z0-9_]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET +
+                            ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),", Pattern.UNICODE_CHARACTER_CLASS);
+            Matcher matcher = pattern.matcher(dto.getFilter() + ",");
             while (matcher.find()) {
                 builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));
             }
@@ -136,29 +105,23 @@ public class ListRestController {
     /**
      * Изменения параметров сущности List
      *
-     * @param obj - объекст с разными параметрами
+     * @param list - сущность списка
      * @return ResponseEntity со статусом
      */
     @PutMapping(value = "/list", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Object> listEdit(@RequestBody ObjectNode obj) {
-        if (!obj.has("id") || !obj.has("name")) {
-            return new ResponseEntity<>(new ApiResponse(false, "Parameter id or name not provided"), HttpStatus.NOT_ACCEPTABLE);
+    public ResponseEntity<Object> listEdit(@RequestBody List list) {
+        String name = list.getName();
+        if (list.getId() == null || name == null) {
+            return new ResponseEntity<>(new ApiResponse(false, "Parameter id|name not provided"), HttpStatus.NOT_ACCEPTABLE);
         }
 
-        String id = obj.get("id").asText();
-        String idCheckResult = List.checkStringId(id);
-        if (!idCheckResult.equals("ok")) {
-            return new ResponseEntity<>(new ApiResponse(false, idCheckResult), HttpStatus.NOT_ACCEPTABLE);
-        }
-
-        String name = obj.get("name").asText();
-        String nameCheckResult = List.checkName(name);
-        if (!nameCheckResult.equals("ok")) {
-            return new ResponseEntity<>(new ApiResponse(false, nameCheckResult), HttpStatus.NOT_ACCEPTABLE);
+        String checkResult;
+        if (!(checkResult = List.checkName(name)).equals("ok")) {
+            return new ResponseEntity<>(new ApiResponse(false, checkResult), HttpStatus.NOT_ACCEPTABLE);
         }
 
         try {
-            Optional<List> editResult = listService.editList(UUID.fromString(id), name);
+            Optional<List> editResult = listService.editList(list.getId(), name);
             if (editResult.isPresent()) {
                 return new ResponseEntity<>(editResult.get(), HttpStatus.OK);
             }
@@ -176,14 +139,11 @@ public class ListRestController {
      * @return ResponseEntity со статусом
      */
     @DeleteMapping(value = "/list/{id}", produces = "application/json")
-    public ResponseEntity<Object> listDelete(@PathVariable(name = "id") String id) {
-        String idCheckResult = List.checkStringId(id);
-        if (!idCheckResult.equals("ok")) {
-            return new ResponseEntity<>(new ApiResponse(false, idCheckResult), HttpStatus.NOT_ACCEPTABLE);
-        }
+    public ResponseEntity<Object> listDelete(@PathVariable(name = "id") UUID id) {
+        if (id == null) return new ResponseEntity<>(new ApiResponse(false, "Parameter id not provided"), HttpStatus.NOT_ACCEPTABLE);
 
         try {
-            if (listService.deleteList(UUID.fromString(id))) {
+            if (listService.deleteList(id)) {
                 return new ResponseEntity<>(new ApiResponse(true, "List deleted"), HttpStatus.OK);
             }
 

@@ -44,7 +44,7 @@ public class Task {
     private int urgency;
 
     @NotNull
-    private boolean done;
+    private Boolean done;
 
     public Task() {
     }
@@ -56,6 +56,7 @@ public class Task {
         this.editDate = createDate;
         this.description = description;
         this.urgency = urgency;
+        this.done = false;
     }
 
     /**
@@ -90,19 +91,6 @@ public class Task {
     public static String checkDescription(String description) {
         int descriptionLength = description.length();
         if (descriptionLength > 200) return "Bad length of parameter description";
-        return "ok";
-    }
-
-    /**
-     * Проверяет правильность id
-     *
-     * @param id - String UUID для проверки
-     * @return String с результатом проверки
-     */
-    public static String checkStringId(String id) {
-        //пока что полностью не изучил границы UUID, првоерка может поменяться в будущем, он всегда 36 символов?
-        int idLength = id.length();
-        if (idLength < 10 || idLength > 50) return "Bad length of parameter id";
         return "ok";
     }
 }
