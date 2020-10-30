@@ -22,5 +22,4 @@ public interface TaskRepository extends JpaRepository<Task, UUID>, JpaSpecificat
 
     Page<Task> findAllByListId(Pageable pageable, UUID id);
 
-    Page<Task> findAllWithSpecification(Specification<Task> spec, Pageable pageable);
 }

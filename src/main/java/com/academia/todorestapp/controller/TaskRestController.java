@@ -133,7 +133,7 @@ public class TaskRestController {
                     SortParameter.equals("editDate") || SortParameter.equals("description") || SortParameter.equals("urgency") ||
                     SortParameter.equals("done"))) {
                 return new ResponseEntity<>(
-                        new ApiResponse(false, "Bad SortParameter, it can be only id|name|createDate|editDate|done"), HttpStatus.NOT_ACCEPTABLE);
+                        new ApiResponse(false, "Bad SortParameter, it can be only id|listId|name|createDate|editDate|description|urgency|done"), HttpStatus.NOT_ACCEPTABLE);
             }
         }
 

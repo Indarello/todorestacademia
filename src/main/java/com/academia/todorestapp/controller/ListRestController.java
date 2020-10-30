@@ -115,9 +115,7 @@ public class ListRestController {
             String filter = obj.get("filter").asText();
 
             Pattern pattern =
-                    Pattern.compile("([A-Za-z0-9_а-яА-Я]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET + ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),",
-                            Pattern.UNICODE_CHARACTER_CLASS
-                    );
+                    Pattern.compile("([A-Za-z0-9_а-яА-Я]{2,})(" + SearchOperation.SIMPLE_OPERATION_SET + ")(\\*?)([A-Za-z0-9_а-яА-Я:\\-.+\\s]+?)(\\*?),", Pattern.UNICODE_CHARACTER_CLASS);
             Matcher matcher = pattern.matcher(filter + ",");
             while (matcher.find()) {
                 builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));

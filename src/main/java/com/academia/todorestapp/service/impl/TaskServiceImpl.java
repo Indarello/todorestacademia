@@ -56,7 +56,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public GetTaskResponse getAllWithSpec(Specification<Task> spec, Pageable pageable) {
-        Page<Task> searchResult = taskRepository.findAllWithSpecification(spec, pageable);
+        Page<Task> searchResult = taskRepository.findAll(spec, pageable);
         return getGetTaskResponse(searchResult);
     }
 
