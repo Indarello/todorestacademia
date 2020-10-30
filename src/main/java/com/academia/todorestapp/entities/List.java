@@ -13,12 +13,15 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Сущность списка
+ * Сущность списка заданий
  */
 @Data
 @Entity
 public class List {
 
+    /**
+     * id списка
+     */
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(
@@ -28,21 +31,39 @@ public class List {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
+    /**
+     * Имя списка
+     */
     @NotNull
     private String name;
 
+    /**
+     * Дата создания списка
+     */
     @NotNull
     private Timestamp createDate;
 
+    /**
+     * Дата последнего изменения списка
+     */
     @NotNull
     private Timestamp editDate;
 
+    /**
+     * Статус завершенности списка, true если все дела в списке завершены
+     */
     @NotNull
     private boolean done;
 
     public List() {
     }
 
+    /**
+     * Создание нового списка, пустой список всегда считается завершенным
+     * Дата создания и изменения ставится автоматически
+     *
+     * @param name - имя нового списка
+     */
     public List(String name) {
         this.createDate = Timestamp.valueOf(LocalDateTime.now());
         this.editDate = createDate;
