@@ -1,12 +1,9 @@
 package com.academia.todorestapp.entities;
 
-import com.sun.istack.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import javax.persistence.*;
+import javax.validation.constraints.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;

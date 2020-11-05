@@ -1,9 +1,8 @@
 package com.academia.todorestapp.entities;
 
-import com.sun.istack.NotNull;
+import javax.validation.constraints.*;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;

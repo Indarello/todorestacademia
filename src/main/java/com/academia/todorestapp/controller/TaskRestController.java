@@ -21,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * CRUD REST контроллер для работы с List
+ * CRUD REST контроллер для работы с заданиями (Task)
  */
 @RestController
 public class TaskRestController {
